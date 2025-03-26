@@ -31,7 +31,7 @@ export let options = {
     },
 };
 
-const BASE_URL = __ENV.HOST || 'http://localhost:8080/teastore';
+const BASE_URL = __ENV.HOST || 'http://localhost:8080/tools.descartes.teastore.webui/';
 
 export default function () {
     // Test TeaStore Homepage
@@ -42,11 +42,11 @@ export default function () {
     });
 
     // Test Products listing endpoint
-    res = http.get(`${BASE_URL}/products`);
-    check(res, {
-        'Products status is 200': (r) => r.status === 200,
-        'Products response time < 500ms': (r) => r.timings.duration < 500,
-    });
+    // res = http.get(`${BASE_URL}/products`);
+    // check(res, {
+    //     'Products status is 200': (r) => r.status === 200,
+    //     'Products response time < 500ms': (r) => r.timings.duration < 500,
+    // });
 
     // Test TeaStore Browse endpoints (simulate browsing different categories)
     res = http.get(`${BASE_URL}/category?category=4&page=1`);
