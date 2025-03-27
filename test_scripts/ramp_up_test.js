@@ -26,7 +26,7 @@ export let options = {
     },
 };
 
-const BASE_URL = __ENV.HOST || 'http://localhost:8080/tools.descartes.teastore.webui';
+const BASE_URL = __ENV.HOST || 'http://100.91.148.100:8080/tools.descartes.teastore.webui';
 const USERNAME = __ENV.USERNAME || 'user2';
 const PASSWORD = __ENV.PASSWORD || 'password';
 
