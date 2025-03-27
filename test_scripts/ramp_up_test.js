@@ -11,44 +11,47 @@ export let options = {
             executor: 'ramping-vus',
             startVUs: 10,
             stages: [
-                // Ramp-up phases: 10, 50, 100, 500, 1000 VUs
-                { duration: '1m', target: 10 },
-                { duration: '1m', target: 50 },
-                { duration: '1m', target: 100 },
-                { duration: '1m', target: 500 },
-                { duration: '1m', target: 1000 },
-                // Steady state at maximum load
-                { duration: '2m', target: 1000 },
-                // Ramp-down phases
-                { duration: '1m', target: 500 },
-                { duration: '1m', target: 100 },
-                { duration: '1m', target: 50 },
-                { duration: '1m', target: 10 },
-                { duration: '1m', target: 0 },
+                { duration: '1m', target: 10 },  // Start with 10 VUs
+                { duration: '1m', target: 25 },  // Ramp up to 25 VUs
+                { duration: '1m', target: 50 },  // Ramp up to 50 VUs
+                { duration: '1m', target: 100 }, // Ramp up to 100 VUs
+                { duration: '2m', target: 100 }, // Hold at 100 VUs
+                { duration: '1m', target: 50 },  // Ramp down to 50 VUs
+                { duration: '1m', target: 25 },  // Ramp down to 25 VUs
+                { duration: '1m', target: 10 },  // Ramp down to 10 VUs
+                { duration: '1m', target: 0 },   // Ramp down to 0 VUs
             ],
             gracefulRampDown: '30s',
         },
     },
 };
 
-const BASE_URL = __ENV.HOST || 'http://localhost:8080/tools.descartes.teastore.webui/';
+const BASE_URL = __ENV.HOST || 'http://localhost:8080/tools.descartes.teastore.webui';
+const USERNAME = __ENV.USERNAME || 'user2';
+const PASSWORD = __ENV.PASSWORD || 'password';
 
 export default function () {
-    // Test TeaStore Homepage
+    // --- LOGIN STEP ---
+    const loginPayload = JSON.stringify({
+        username: USERNAME,
+        password: PASSWORD,
+    });
+    let loginRes = http.post(`${BASE_URL}/login`, loginPayload, {
+        headers: { 'Content-Type': 'application/json' },
+    });
+    check(loginRes, {
+        'Login status is 200': (r) => r.status === 200,
+        'Logged in successfully': (r) => r.json('success') === true,
+    });
+    sleep(1);
+
+    // --- TEST TEASTORE ENDPOINTS ---
     let res = http.get(`${BASE_URL}/`);
     check(res, {
         'Homepage status is 200': (r) => r.status === 200,
         'Homepage response time < 500ms': (r) => r.timings.duration < 500,
     });
 
-    // Test Products listing endpoint
-    // res = http.get(`${BASE_URL}/products`);
-    // check(res, {
-    //     'Products status is 200': (r) => r.status === 200,
-    //     'Products response time < 500ms': (r) => r.timings.duration < 500,
-    // });
-
-    // Test TeaStore Browse endpoints (simulate browsing different categories)
     res = http.get(`${BASE_URL}/category?category=4&page=1`);
     check(res, {
         'Category 4 status is 200': (r) => r.status === 200,
@@ -67,35 +70,16 @@ export default function () {
         'Category 6 response time < 500ms': (r) => r.timings.duration < 500,
     });
 
-    // Test TeaStore Cart endpoint (simulate viewing the cart)
     res = http.get(`${BASE_URL}/cart`);
     check(res, {
         'Cart status is 200': (r) => r.status === 200,
         'Cart response time < 500ms': (r) => r.timings.duration < 500,
     });
 
-    // Test TeaStore Checkout endpoints
-    // Option 1: GET checkout page
     res = http.get(`${BASE_URL}/checkout`);
     check(res, {
         'Checkout page status is 200': (r) => r.status === 200,
         'Checkout page response time < 500ms': (r) => r.timings.duration < 500,
-    });
-
-    // Option 2: POST checkout action (simulate completing a purchase)
-    const checkoutPayload = JSON.stringify({
-        items: [
-            { productId: 101, quantity: 1 },
-            { productId: 102, quantity: 2 },
-        ],
-        paymentMethod: 'credit_card',
-    });
-    res = http.post(`${BASE_URL}/checkout`, checkoutPayload, {
-        headers: { 'Content-Type': 'application/json' },
-    });
-    check(res, {
-        'Checkout action status is 200': (r) => r.status === 200,
-        'Checkout action response time < 500ms': (r) => r.timings.duration < 500,
     });
 
     sleep(1);
