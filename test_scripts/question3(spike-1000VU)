@@ -1,0 +1,53 @@
+import http from 'k6/http';
+import { check, sleep } from 'k6';
+
+export let options = {
+  thresholds: {
+    // 95% of requests under 500ms
+    http_req_duration: ['p(95)<500'],
+    // <1% failed requests tolerated
+    http_req_failed: ['rate<0.01'],
+  },
+  scenarios: {
+    spike: {
+      executor: 'ramping-vus',
+      startVUs: 10,
+      stages: [
+        { duration: '30s',  target: 10 },    // warmup
+        { duration: '30s',  target: 1000 },  // spike up
+        { duration: '1m',   target: 1000 },  // hold peak
+        { duration: '30s',  target: 10 },    // ramp down
+      ],
+      gracefulRampDown: '10s',
+    },
+  },
+};
+
+const BASE = __ENV.HOST || 'http://100.91.148.100:8080/tools.descartes.teastore.webui';
+const USER = __ENV.USERNAME || 'user2';
+const PASS = __ENV.PASSWORD || 'password';
+
+export default function () {
+  // LOGIN
+  let res = http.post(`${BASE}/login`,
+    JSON.stringify({ username: USER, password: PASS }),
+    { headers: { 'Content-Type': 'application/json' } }
+  );
+  check(res, { 'login ok': r => r.status === 200 && r.json('success') === true });
+  sleep(1);
+
+  // Key endpoints
+  res = http.get(`${BASE}/`);
+  check(res, { 'home 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/category?category=4&page=1`);
+  check(res, { 'cat4 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/cart`);
+  check(res, { 'cart 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/checkout`);
+  check(res, { 'checkout 200': r => r.status === 200 });
+
+  sleep(1);
+}
