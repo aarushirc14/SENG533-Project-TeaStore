@@ -15,7 +15,7 @@ export let options = {
       stages: [
         { duration: '30s',  target: 10 },    // warmup
         { duration: '30s',  target: 1000 },  // spike up
-        { duration: '1m',   target: 1000 },  // hold peak
+        { duration: '2m',   target: 1000 },  // hold peak
         { duration: '30s',  target: 10 },    // ramp down
       ],
       gracefulRampDown: '10s',
@@ -42,6 +42,12 @@ export default function () {
 
   res = http.get(`${BASE}/category?category=4&page=1`);
   check(res, { 'cat4 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/category?category=5&page=1`);
+  check(res, { 'cat5 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/category?category=6&page=1`);
+  check(res, { 'cat6 200': r => r.status === 200 });
 
   res = http.get(`${BASE}/cart`);
   check(res, { 'cart 200': r => r.status === 200 });
