@@ -12,7 +12,7 @@ export let options = {
       startVUs: 10,
       stages: [
         { duration: '10s', target: 4000 },  // ramp from 10 → 4000 VUs in 10 s
-        { duration: '1m',  target: 4000 },  // hold at 4000 VUs for 1 min
+        { duration: '2m',  target: 4000 },  // hold at 4000 VUs for 1 min
         { duration: '30s', target:   10 },  // ramp down back to 10 VUs
       ],
       gracefulRampDown: '30s',
@@ -44,6 +44,12 @@ export default function () {
 
   res = http.get(`${BASE}/category?category=4&page=1`);
   check(res, { 'GET /category 4': r => r.status === 200 });
+
+  res = http.get(`${BASE}/category?category=5&page=1`);
+  check(res, { 'cat5 200': r => r.status === 200 });
+
+  res = http.get(`${BASE}/category?category=6&page=1`);
+  check(res, { 'cat6 200': r => r.status === 200 });
 
   res = http.get(`${BASE}/cart`);
   check(res, { 'GET /cart status 200': r => r.status === 200 });
